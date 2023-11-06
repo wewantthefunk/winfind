@@ -1,0 +1,5 @@
+﻿quick:
+c:\users\wewan\downloads
+
+exclude:
+c:\users\wewan\appdata
