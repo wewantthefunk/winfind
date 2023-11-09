@@ -25,22 +25,17 @@
             List<string> entries = _utilities.ReadLinesFromFile(_configFile, 0, 999);
 
             bool addToExclude = false;
-            bool addToQuick = false;
 
             foreach (string entry in entries) {
                 if (string.IsNullOrEmpty(entry)) {
                     continue;
                 } else if (entry == "exclude:") {
                     addToExclude = true;
-                    addToQuick = false;
-                } else if (entry == "quick:") {
+                } else if (entry.EndsWith(":")) {
                     addToExclude = false;
-                    addToQuick = true;
                 } else {
                     if (addToExclude) {
                         _excluded.Add(entry.Trim().ToLower());
-                    } else if (addToQuick) { 
-                        _quickLookup.Add(entry.Trim().ToLower());
                     }
                 }
             }

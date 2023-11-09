@@ -56,15 +56,14 @@ if (!args.Contains("-index")) {
 
     int[] i = winFind.BinarySearch();
 
-    if (i.Length == 0) {
-        Console.WriteLine(args[0] + " not found");
-        Environment.CurrentDirectory = currentDirectory;
-        return;
-    }
-
     Array.Sort(i);
 
-    List<string> found = utilities.ReadLinesFromFile("files.lst", i[0], i.Length);
+    List<string> found = new List<string>();
+    
+    if (i.Length > 0)
+        found = utilities.ReadLinesFromFile("files.lst", i[0], i.Length);
+
+    found.AddRange(winFind.GetQuickSearchResults());
 
     Console.WriteLine("Total files found: " + Convert.ToString(found.Count));
 

@@ -8,18 +8,97 @@ using System.Threading.Tasks;
 namespace winfind {
     internal class WinFind {
         private string _searchFor;
+        private string _configFile;
         private Utilities _utilities;
         private List<string> _files;
+        private List<string> _quickSearch;
 
         public WinFind(string searchFor) {
             _searchFor = searchFor;
             _utilities= new Utilities();
             _files = new List<string>();
+            _quickSearch = new List<string>();
+            _configFile = "config.txt";
 
             if (!TryServer())
                 _files = _utilities.LoadList(Environment.CurrentDirectory + "\\files.idx");
 
             Console.WriteLine("total files to search: " + Convert.ToString(_files.Count));
+
+            ReadConfigFile();
+
+            Console.WriteLine("total quick search directories: " + Convert.ToString(_quickSearch.Count));
+        }
+
+        private void ReadConfigFile() {
+            List<string> entries = _utilities.ReadLinesFromFile(_configFile, 0, 999);
+
+            bool addToQuick = false;
+
+            foreach (string entry in entries) {
+                if (string.IsNullOrEmpty(entry)) {
+                    continue;
+                } else if (entry == "quick:") {
+                    addToQuick = true;
+                } else if (entry.EndsWith(":")) {
+                    addToQuick = false;
+                } else {
+                    if (addToQuick) {
+                        _quickSearch.Add(entry.Trim().ToLower());
+                    }
+                }
+            }
+        }
+
+        public List<string> GetQuickSearchResults() {
+            List<string> results = new();
+
+            foreach (string entry in _quickSearch) {
+                results.AddRange(TraverseDirectories(entry));
+            }
+
+            return results;
+        }
+
+        private List<string> TraverseDirectories(string currentDirectory) {
+            List<string> results = new();
+
+            // Attempt to retrieve the list of directories
+            string[] subDirectories;
+            try {
+                subDirectories = Directory.GetDirectories(currentDirectory);
+            } catch (UnauthorizedAccessException e) {
+                // Handle access denied exceptions gracefully
+                Console.WriteLine($"Access denied to {currentDirectory}: {e.Message}");
+                return results;
+            } catch (Exception e) {
+                // Handle other exceptions if needed
+                Console.WriteLine($"Unable to enumerate directories in {currentDirectory}: {e.Message}");
+                return results;
+            }
+
+            // Recursively call this method for each subdirectory
+            foreach (string subDirectory in subDirectories) {
+                TraverseDirectories(subDirectory);
+            }
+
+            // Optionally print files in the current directory
+            try {
+                string[] files = Directory.GetFiles(currentDirectory);
+                if (!currentDirectory.EndsWith("\\"))
+                    currentDirectory += "\\";
+
+                foreach (string file in files) {
+                    string filename = file.Replace(currentDirectory, string.Empty);
+                    if (filename.StartsWith(_searchFor)) {
+                        results.Add(file);
+                    }
+                }
+            } catch (Exception e) {
+                Console.WriteLine($"Unable to enumerate files in {currentDirectory}: {e.Message}");
+            }
+
+            return results;
         }
 
         private bool TryServer() {
