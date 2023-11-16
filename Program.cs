@@ -40,7 +40,13 @@ stopwatch.Start();
 
 if (!args.Contains("-index")) {
 
+    var watch = Stopwatch.StartNew();
+
+    bool startsWith = true;
+
     string target = args[0];
+
+    List<string> found = new List<string>();
 
     if (target.StartsWith("\"")) {
         target = target.Substring(1);
@@ -52,16 +58,41 @@ if (!args.Contains("-index")) {
 
     target = target.ToLower();
 
-    WinFind winFind = new(target);
+    int[] i;
 
-    int[] i = winFind.BinarySearch();
+    if (target.StartsWith("*")) {
+        target = target.Substring(1);
+        startsWith = false;
+    }
+
+    WinFind winFind = new(target, startsWith);
+
+    if (startsWith) {
+        i = winFind.BinarySearch();
+    } else {
+
+        i = winFind.ParallelSearch();
+    }
 
     Array.Sort(i);
 
-    List<string> found = new List<string>();
-    
-    if (i.Length > 0)
-        found = utilities.ReadLinesFromFile("files.lst", i[0], i.Length);
+    List<string> list;
+
+    int c = 0;
+
+    if (i.Length > 100) {
+        Console.WriteLine(i.Length.ToString() + " records found. Only showing the first 100. Perhaps you need a more granular search");
+    }
+
+    if (i.Length > 0) {
+        while (c < 100 && c < i.Length) {
+            list = utilities.ReadLinesFromFile("files.lst", i[c], 1);
+            if (list.Count > 0) {
+                found.Add(list[0]);
+            }
+            c++;
+        }
+    }
 
     found.AddRange(winFind.GetQuickSearchResults());
 
@@ -76,6 +107,11 @@ if (!args.Contains("-index")) {
     Console.WriteLine("Total files found: " + Convert.ToString(found.Count));
 
     Environment.CurrentDirectory = currentDirectory;
+
+    watch.Stop();
+
+    Console.WriteLine($"Total search time: {watch.ElapsedMilliseconds} ms");
+
     return;
 }
 

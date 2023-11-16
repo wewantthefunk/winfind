@@ -12,13 +12,20 @@ namespace winfind {
         private Utilities _utilities;
         private List<string> _files;
         private List<string> _quickSearch;
+        private List<int> _found;
+        private bool _startsWith;
 
-        public WinFind(string searchFor) {
+        private readonly object lockObject;
+
+        public WinFind(string searchFor, bool startsWith) {
             _searchFor = searchFor;
             _utilities= new Utilities();
             _files = new List<string>();
             _quickSearch = new List<string>();
             _configFile = "config.txt";
+            lockObject = new object();
+            _found= new List<int>();
+            _startsWith = startsWith;
 
             if (!TryServer())
                 _files = _utilities.LoadList(Environment.CurrentDirectory + "\\files.idx");
@@ -90,8 +97,14 @@ namespace winfind {
 
                 foreach (string file in files) {
                     string filename = file.Replace(currentDirectory, string.Empty);
-                    if (filename.StartsWith(_searchFor)) {
-                        results.Add(file);
+                    if (_startsWith) {
+                        if (filename.StartsWith(_searchFor)) {
+                            results.Add(file);
+                        }
+                    } else {
+                        if (filename.Contains(_searchFor)) {
+                            results.Add(file);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -135,6 +148,51 @@ namespace winfind {
             return result;*/
         }
 
+        public int[] ParallelSearch() {
+            var foundIndices = _files.AsParallel()
+                                  .Select((record, index) => new { record, index })
+                                  .Where(item => item.record.Trim().ToLower().Contains(_searchFor))
+                                  .Select(item => item.index)
+                                  .ToList();
+
+            return foundIndices.ToArray();
+        }
+
+        public int[] ParallelSearch2() {
+            int threadCount = 10;
+            int min = 0;
+            int max = _files.Count;
+            _found.Clear();
+
+            Thread[] threads = new Thread[threadCount];
+
+            int chunk = _files.Count / threadCount;
+
+            for (int x = 0; x < threads.Length; x++) {
+                int offset = x > 0 ? 1 : 0;
+                min = (x * chunk) + offset;
+                max = (x + 1) * chunk;
+                if (max + chunk > _files.Count)
+                    max = _files.Count;
+
+                threads[x] = new Thread(() => LocalSearch2(min, max));
+                threads[x].Start();
+                threads[x].Join();
+            }
+
+            return _found.ToArray(); 
+        }
+
+        private void LocalSearch2(int min, int max) {
+            int[] results = LocalSearch(min, max);
+            Console.WriteLine(results.Length);
+             for (int x = 0; x < results.Length; x++) {
+                lock(lockObject) {
+                    _found.Add(results[x]);
+                }
+            }
+        }
+
         public int[] BinarySearch() {
             if (_files.Count == 0) {
                 return ReadFromServer();
@@ -148,10 +206,12 @@ namespace winfind {
         }
 
         private int[] LocalSearch() {
+            return LocalSearch(0, _files.Count - 1);
+        }
+
+        private int[] LocalSearch(int min, int max) {
             string target = _searchFor;
-            int min = 0;
-            int max = _files.Count - 1;
-            List<int> result = new List<int>();
+            List<int> result = new();
             int count = 0;
 
             while (min <= max) {
@@ -200,8 +260,6 @@ namespace winfind {
                     }
                 }
             }
-
-            Console.WriteLine("total comparisons: " + Convert.ToString(count));
 
             return result.ToArray();
         }

@@ -2,7 +2,7 @@
   "profiles": {
     "winfind": {
       "commandName": "Project",
-      "commandLineArgs": "winfind-test.txt"
+      "commandLineArgs": "*000.testlog"
     }
   }
 }
