@@ -30,16 +30,20 @@ namespace winfind {
                 using (var stream = client.GetStream())
                 using (var reader = new StreamReader(stream, Encoding.UTF8))
                 using (var writer = new StreamWriter(stream, Encoding.UTF8)) {
-                    // Read request from client
-                    string request = reader.ReadLine();
-                    Console.WriteLine($"Received: {request}");
+                    if (reader != null) {
+                        // Read request from client
+                        string? request = reader.ReadLine();
+                        if (request != null) {
+                            Console.WriteLine($"Received: {request}");
 
-                    // Send a response
-                    string response = $"Server received your message: {request}";
-                    writer.WriteLine(response);
-                    writer.Flush();
+                            // Send a response
+                            string response = $"Server received your message: {request}";
+                            writer.WriteLine(response);
+                            writer.Flush();
 
-                    Console.WriteLine("Response sent.");
+                            Console.WriteLine("Response sent.");
+                        }
+                    }
                 }
 
                 client.Close();

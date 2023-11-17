@@ -20,7 +20,12 @@ if (args.Length == 0) {
 string executablePath = Assembly.GetExecutingAssembly().Location;
 
 // Get the directory that contains the executable
-string executableDirectory = Path.GetDirectoryName(executablePath);
+string? executableDirectory = Path.GetDirectoryName(executablePath);
+
+if (executableDirectory == null) {
+    Console.WriteLine("unable to find executable directory for winfind");
+    return;
+}
 
 string currentDirectory = Environment.CurrentDirectory;
 
