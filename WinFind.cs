@@ -159,7 +159,7 @@ namespace winfind {
         }
 
         public int[] ParallelSearch2() {
-            int threadCount = 10;
+            int threadCount = Convert.ToInt32(Math.Ceiling(_files.Count *  0.00002f));
             int min = 0;
             int max = _files.Count;
             _found.Clear();
