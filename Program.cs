@@ -38,6 +38,11 @@ if (args.Contains("-server")) {
     return;
 }
 
+if (args.Contains("-config")) {
+
+    return;
+}
+
 Stopwatch stopwatch = new Stopwatch();
 
 // Start the stopwatch

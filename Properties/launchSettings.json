@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "winfind": {
-      "commandName": "Project",
-      "commandLineArgs": "*000.testlog"
-    }
-  }
-}
