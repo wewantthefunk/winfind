@@ -6,7 +6,6 @@
         private readonly string _indexFile;
         private readonly string _listFile;
         private List<string> _excluded;
-        private List<string> _quickLookup;
         private FileEntry _files;
 
         public WinIndex() { 
@@ -15,8 +14,7 @@
             _indexFile = "files.idx";
             _listFile= "files.lst";
             _files = new FileEntry();
-            _excluded = new List<string>(); 
-            _quickLookup = new List<string>();
+            _excluded = new List<string>();
 
             ReadConfigFile();
         }
@@ -52,6 +50,7 @@
         }
 
         private void WriteEntries() {
+            Console.WriteLine("Saving file index" + Environment.NewLine);
             _utilities.DeleteFile(_listFile);
             _utilities.DeleteFile(_indexFile);
             int count = 0;
