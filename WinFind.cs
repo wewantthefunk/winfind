@@ -89,14 +89,16 @@ namespace winfind {
                 TraverseDirectories(subDirectory);
             }
 
-            // Optionally print files in the current directory
             try {
+                if (currentDirectory == "c:\\users\\wewan\\downloads") {
+                    int i = 0;
+                }
                 string[] files = Directory.GetFiles(currentDirectory);
                 if (!currentDirectory.EndsWith("\\"))
                     currentDirectory += "\\";
 
                 foreach (string file in files) {
-                    string filename = file.Replace(currentDirectory, string.Empty);
+                    string filename = file.Replace(currentDirectory, string.Empty).Trim().ToLower();
                     if (_startsWith) {
                         if (filename.StartsWith(_searchFor)) {
                             results.Add(file);
