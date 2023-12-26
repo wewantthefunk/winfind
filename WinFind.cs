@@ -90,9 +90,6 @@ namespace winfind {
             }
 
             try {
-                if (currentDirectory == "c:\\users\\wewan\\downloads") {
-                    int i = 0;
-                }
                 string[] files = Directory.GetFiles(currentDirectory);
                 if (!currentDirectory.EndsWith("\\"))
                     currentDirectory += "\\";

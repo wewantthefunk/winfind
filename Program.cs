@@ -13,6 +13,7 @@ utilities.TouchFile("files.lst");
 string INDEX_FLAG = "--index";
 string SERVER_FLAG = "--server";
 string START_IN_FLAG = "--s";
+string SHOW_ALL_RESULTS_FLAG = "--all";
 
 if (args.Length == 0) {
     Console.WriteLine("specify either '" + INDEX_FLAG + "' to re-index drive, or the file or directory to search for");
@@ -107,12 +108,18 @@ List<string> list;
 
 int c = 0;
 
-if (i.Length > 100) {
-    Console.WriteLine(i.Length.ToString() + " records found. Only showing the first 100. Perhaps you need a more granular search");
+int maxShown = 100;
+
+if (args.Contains(SHOW_ALL_RESULTS_FLAG)) {
+    maxShown = int.MaxValue;
+}
+
+if (i.Length > maxShown && maxShown != int.MaxValue) {
+    Console.WriteLine(i.Length.ToString() + " records found. Only showing the first " + maxShown.ToString() + ". Perhaps you need a more granular search");
 }
 
 if (i.Length > 0) {
-    while (c < 100 && c < i.Length) {
+    while (c < maxShown && c < i.Length) {
         list = utilities.ReadLinesFromFile("files.lst", i[c], 1);
         if (list.Count > 0) {
             found.Add(list[0]);
