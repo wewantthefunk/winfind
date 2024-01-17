@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using winfind;
+using System.Runtime.InteropServices;
 
 Utilities utilities= new Utilities();
 
@@ -48,7 +49,11 @@ int[] i;
 if (args.Contains(INDEX_FLAG)) {
     WinIndex index = new();
 
-    string startIn = "C:\\";
+    string startIn = "/";
+
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+        startIn = "C:\\";
+    }
 
     if (args.Contains(START_IN_FLAG)) {
         int ii = -1;
@@ -86,8 +91,6 @@ if (target.StartsWith("\"")) {
 if (target.EndsWith("\"")) {
     target = target[..^1];
 }
-
-target = target.ToLower();
 
 if (target.StartsWith("*")) {
     target = target.Substring(1);

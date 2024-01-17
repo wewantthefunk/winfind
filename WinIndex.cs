@@ -1,4 +1,6 @@
-﻿namespace winfind {
+﻿using System.Runtime.InteropServices;
+
+namespace winfind {
     internal class WinIndex {
 
         private readonly Utilities _utilities;
@@ -7,6 +9,7 @@
         private readonly string _listFile;
         private List<string> _excluded;
         private FileEntry _files;
+        private string _sep;
 
         public WinIndex() { 
             _utilities= new Utilities();
@@ -15,6 +18,12 @@
             _listFile= "files.lst";
             _files = new FileEntry();
             _excluded = new List<string>();
+
+            _sep = "/";
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                _sep = "\\";
+            }
 
             ReadConfigFile();
         }
@@ -33,7 +42,7 @@
                     addToExclude = false;
                 } else {
                     if (addToExclude) {
-                        _excluded.Add(entry.Trim().ToLower());
+                        _excluded.Add(entry.Trim());
                     }
                 }
             }
@@ -66,7 +75,7 @@
 
         private void TraverseDirectories(string currentDirectory) {
             foreach (string exclude in _excluded) {
-                if (currentDirectory.ToLower().StartsWith(exclude)) {
+                if (currentDirectory.StartsWith(exclude)) {
                     return;
                 }
             }
@@ -95,8 +104,8 @@
             // Optionally print files in the current directory
             try {
                 string[] files = Directory.GetFiles(currentDirectory);
-                if (!currentDirectory.EndsWith("\\"))
-                    currentDirectory += "\\";
+                if (!currentDirectory.EndsWith(_sep))
+                    currentDirectory += _sep;
 
                 foreach (string file in files) {
                     string filename = file.Replace(currentDirectory, string.Empty);

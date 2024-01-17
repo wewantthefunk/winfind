@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace winfind {
     internal class WinFind {
@@ -14,6 +15,7 @@ namespace winfind {
         private List<string> _quickSearch;
         private List<int> _found;
         private bool _startsWith;
+        private string _sep;
 
         private readonly object lockObject;
 
@@ -27,8 +29,14 @@ namespace winfind {
             _found= new List<int>();
             _startsWith = startsWith;
 
+            _sep = "/";
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                _sep = "\\";
+            }
+
             if (!TryServer())
-                _files = _utilities.LoadList(Environment.CurrentDirectory + "\\files.idx");
+                _files = _utilities.LoadList(Environment.CurrentDirectory + _sep + "files.idx");
 
             Console.WriteLine("total files to search: " + Convert.ToString(_files.Count));
 
@@ -51,7 +59,7 @@ namespace winfind {
                     addToQuick = false;
                 } else {
                     if (addToQuick) {
-                        _quickSearch.Add(entry.Trim().ToLower());
+                        _quickSearch.Add(entry.Trim());
                     }
                 }
             }
@@ -91,11 +99,11 @@ namespace winfind {
 
             try {
                 string[] files = Directory.GetFiles(currentDirectory);
-                if (!currentDirectory.EndsWith("\\"))
-                    currentDirectory += "\\";
+                if (!currentDirectory.EndsWith(_sep))
+                    currentDirectory += _sep;
 
                 foreach (string file in files) {
-                    string filename = file.Replace(currentDirectory, string.Empty).Trim().ToLower();
+                    string filename = file.Replace(currentDirectory, string.Empty).Trim();
                     if (_startsWith) {
                         if (filename.StartsWith(_searchFor)) {
                             results.Add(file);
@@ -150,7 +158,7 @@ namespace winfind {
         public int[] ParallelSearch() {
             var foundIndices = _files.AsParallel()
                                   .Select((record, index) => new { record, index })
-                                  .Where(item => item.record.Trim().ToLower().Contains(_searchFor))
+                                  .Where(item => item.record.Trim().Contains(_searchFor))
                                   .Select(item => item.index)
                                   .ToList();
 
@@ -215,7 +223,7 @@ namespace winfind {
 
             while (min <= max) {
                 int middle = (min + max) / 2;
-                string middleValue = _files[middle].Trim().ToLower().Replace(Environment.NewLine, string.Empty);
+                string middleValue = _files[middle].Trim().Replace(Environment.NewLine, string.Empty);
 
                 // Check if middleValue starts with target
                 if (middleValue.StartsWith(target, true, null)) {
