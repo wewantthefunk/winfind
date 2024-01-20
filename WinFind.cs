@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace winfind {
     internal class WinFind {
@@ -15,11 +16,13 @@ namespace winfind {
         private List<string> _quickSearch;
         private List<int> _found;
         private bool _startsWith;
+
+        private bool _endsWith;
         private string _sep;
 
         private readonly object lockObject;
 
-        public WinFind(string searchFor, bool startsWith) {
+        public WinFind(string searchFor, bool startsWith, bool endsWith) {
             _searchFor = searchFor;
             _utilities= new Utilities();
             _files = new List<string>();
@@ -28,6 +31,7 @@ namespace winfind {
             lockObject = new object();
             _found= new List<int>();
             _startsWith = startsWith;
+            _endsWith = endsWith;
 
             _sep = "/";
 
@@ -105,11 +109,13 @@ namespace winfind {
                 foreach (string file in files) {
                     string filename = file.Replace(currentDirectory, string.Empty).Trim();
                     if (_startsWith) {
-                        if (filename.StartsWith(_searchFor)) {
+                        if (filename.StartsWith(_searchFor) && !results.Contains(file)) {
                             results.Add(file);
                         }
+                    } else if (_endsWith) {
+
                     } else {
-                        if (filename.Contains(_searchFor)) {
+                        if (filename.Contains(_searchFor) && !results.Contains(file)) {
                             results.Add(file);
                         }
                     }

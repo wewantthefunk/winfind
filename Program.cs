@@ -79,10 +79,11 @@ if (args.Contains(INDEX_FLAG)) {
 var watch = Stopwatch.StartNew();
 
 bool startsWith = true;
+bool endsWith = false;
 
 string target = args[0];
 
-List<string> found = new List<string>();
+List<string> found = new();
 
 if (target.StartsWith("\"")) {
     target = target[1..];
@@ -97,7 +98,12 @@ if (target.StartsWith("*")) {
     startsWith = false;
 }
 
-WinFind winFind = new(target, startsWith);
+if (target.EndsWith("*")) {
+    target = target[..^1];
+    endsWith = true;
+}
+
+WinFind winFind = new(target, startsWith, endsWith);
 
 if (startsWith) {
     i = winFind.BinarySearch();
