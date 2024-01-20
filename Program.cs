@@ -139,16 +139,18 @@ if (i.Length > 0) {
 
 found.AddRange(winFind.GetQuickSearchResults());
 
-Console.WriteLine("Total files found: " + Convert.ToString(found.Count));
+List<string> unique = found.Distinct().ToList();
+
+Console.WriteLine("Total files found: " + Convert.ToString(unique.Count));
 
 int count = 0;
 
-foreach(string s in found) {
+foreach(string s in unique) {
     Console.WriteLine(s);
     count++;
 }
 
-Console.WriteLine("Total files found: " + Convert.ToString(found.Count));
+Console.WriteLine("Total files found: " + Convert.ToString(unique.Count));
 
 Environment.CurrentDirectory = currentDirectory;
 
